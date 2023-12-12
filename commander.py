@@ -1,5 +1,6 @@
 import requests
 import json
+import base64
 
 # Make a GET request
 # ip ='222.100.59.199'
@@ -14,33 +15,30 @@ def agent_command(ip, command, arg):
     data = {'command': command, 'arg': arg}
     header = {'Content-Type': 'application/json'}
     response = requests.post('http://'+ip+':8080/command', data=json.dumps(data), headers=header)
+    print(response.text)
 
-    file_data = json.loads(response.text)
     
-    with open('./cmd_reulst.txt', 'wb') as f:
-        f.write(file_data['cmd_result'].encode())
-
-    print("\nPOST Response")
-    print(file_data['message'])
 
 # 게스트 입장에서 다운로드 == 파일 이동 호스트 -> 게스트
-def agent_download(ip, path:str):
-    with open(path, 'rb') as f:
-        file_data = f.read().decode()
-    file_name = path.split('/')[-1:][0]
-    data = {'file_data': file_data, 'file_name': file_name}
+def agent_download(ip:str, host_path:str, guest_path:str):
+    with open(host_path, 'rb') as f:
+        file_data = f.read()
+    file_data = base64.b64encode(file_data)
+    file_data = file_data.decode()
+
+    data = {'file_data': file_data, 'guest_path': guest_path}
     header = {'Content-Type': 'application/json'}
     response = requests.post('http://'+ip+':8080/download', data=json.dumps(data), headers=header)    
     print(response.text)
 
 # 게스트 입장에서 업로드 == 파일 이동 게스트 -> 호스트
-def agent_upload(ip, path):
+def agent_upload(ip, host_path, guest_path):
     #print('http://'+ip+':8080/download?'+path)
-    data = {'path': path}
+    data = {'guest_path': guest_path}
     header = {'Content-Type': 'application/json'}
     response = requests.post('http://'+ip+':8080/upload', data=json.dumps(data), headers=header)
     data = json.loads(response.text)
-    with open('./test_'+data['file_name'], 'wb') as f:
+    with open(host_path, 'wb') as f:
         f.write(data['file_data'].encode())
 
     print('GET Response: ')
@@ -50,8 +48,4 @@ def agent_upload(ip, path):
 
 if __name__ == "__main__":
     ip = '222.100.59.199'
-    path = 'C:/Users/admin/Desktop/floder/cmd_reulst.txt'
-    #ip = 'localhost'
-    #agent_command(ip, 'ipconfig', '/all')
-    #agent_download(ip ,'C:/Users/User/Desktop/kdt/project/vmcontrol/cmd_reulst.txt')
-    agent_upload(ip, path)
+    agent_upload(ip, './Microsoft-Windows-Sysmon%4Operational.csv', './Microsoft-Windows-Sysmon%4Operational.csv')
