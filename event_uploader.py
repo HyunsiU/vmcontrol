@@ -2,7 +2,7 @@ import pymysql
 import shutil
 import os
 
-def connetc_db(db_address:str):
+def connect_db(db_address:str):
     db_con = pymysql.connect(
         user = 'root',
         passwd = 'kdt_test',
@@ -11,9 +11,13 @@ def connetc_db(db_address:str):
         db= 'sysmon_event'
     )
 
-
+    
     return db_con
     pass
+
+def close_db(db_handle):
+    db_handle.close()
+
 
 def upload_to_db(csv_path:str, index_name:str, db_handle):
 
@@ -42,5 +46,5 @@ def upload_to_db(csv_path:str, index_name:str, db_handle):
 
 
 if __name__ == '__main__':
-    upload_to_db('./2023_12_12_sysmon.csv', '2023_12_12.csv', connetc_db('localhost'))
+    upload_to_db('./2023_12_12_sysmon.csv', '2023_12_12.csv', connect_db('localhost'))
     #connetc_db('localhost')
